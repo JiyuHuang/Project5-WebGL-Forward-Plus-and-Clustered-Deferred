@@ -12,6 +12,10 @@ export default function(params) {
   // TODO: Read this buffer to determine the lights influencing a cluster
   uniform sampler2D u_clusterbuffer;
 
+  uniform mat4 u_viewMatrix;
+  uniform float u_nearPlane;
+  uniform float u_farPlane;
+
   varying vec3 v_position;
   varying vec3 v_normal;
   varying vec2 v_uv;
@@ -80,6 +84,8 @@ export default function(params) {
     vec3 normal = applyNormalMap(v_normal, normap);
 
     vec3 fragColor = vec3(0.0);
+
+    int frustumIdxZ = int((-(u_viewMatrix * vec4(v_position, 1.0)).z - u_nearPlane) / (u_farPlane - u_nearPlane));
 
     for (int i = 0; i < ${params.numLights}; ++i) {
       Light light = UnpackLight(i);

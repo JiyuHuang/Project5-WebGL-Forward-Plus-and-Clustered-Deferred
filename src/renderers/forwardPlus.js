@@ -1,4 +1,4 @@
-import { gl } from '../init';
+import { canvas, gl } from '../init';
 import { mat4, vec4, vec3 } from 'gl-matrix';
 import { loadShaderProgram } from '../utils';
 import { NUM_LIGHTS } from '../scene';
@@ -16,6 +16,11 @@ export default class ForwardPlusRenderer extends BaseRenderer {
     
     this._shaderProgram = loadShaderProgram(vsSource, fsSource({
       numLights: NUM_LIGHTS,
+      canvasHeight: canvas.height,
+      canvasWidth: canvas.width,
+      xSlices: xSlices,
+      ySlices: ySlices,
+      zSlices: zSlices,
     }), {
       uniforms: ['u_viewProjectionMatrix', 'u_colmap', 'u_normap', 'u_lightbuffer', 'u_clusterbuffer'],
       attribs: ['a_position', 'a_normal', 'a_uv'],
