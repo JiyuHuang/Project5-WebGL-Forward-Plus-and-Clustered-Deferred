@@ -4,12 +4,12 @@ WebGL Forward+ and Clustered Deferred Shading
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 5**
 
 * Jiyu Huang
-* Tested on: (TODO) **Google Chrome 222.2** on
+* Tested on: **Google Chrome 95.0.4638.54** on
   Windows 10, AMD Ryzen 7 5800H @ 3.20GHz 16GB, RTX 3070 Laptop 8GB
 
 ### Live Online
 
-[![](img/thumb.png)](http://TODO.github.io/Project5-WebGL-Forward-Plus-and-Clustered-Deferred)
+[![](img/thumb.png)](http://JiyuHuang.github.io/Project5-WebGL-Forward-Plus-and-Clustered-Deferred)
 
 ### Demo Video/GIF
 

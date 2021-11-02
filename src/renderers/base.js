@@ -5,7 +5,7 @@ import { vec4 } from 'gl-matrix';
 export default class BaseRenderer {
   constructor(xSlices, ySlices, zSlices) {
     // Create a texture to store cluster data. Each cluster stores the number of lights followed by the light indices
-    this._clusterTexture = new TextureBuffer(xSlices * ySlices * zSlices, Math.floor(NUM_LIGHTS / 4) + 1);
+    this._clusterTexture = new TextureBuffer(xSlices * ySlices * zSlices, NUM_LIGHTS + 1);
     this._xSlices = xSlices;
     this._ySlices = ySlices;
     this._zSlices = zSlices;
@@ -33,30 +33,45 @@ export default class BaseRenderer {
       vec4.transformMat4(lightCameraSpacePos, lightWorldPos, viewMatrix);
       lightCameraSpacePos[2] *= -1;
 
-      const frustumHeight = frustumUnitHeight * lightCameraSpacePos[2];
-      const frustumWidth = frustumUnitWidth * lightCameraSpacePos[2];
-      const frustumXMin = -frustumWidth / 2;
-      const frustumYMin = -frustumHeight / 2;
-      const gridLenX = frustumWidth / this._xSlices;
-      const gridLenY = frustumHeight / this._ySlices;
+      const idxRangeForXY = (depth) => {
+        const frustumHeight = frustumUnitHeight * depth;
+        const frustumWidth = frustumUnitWidth * depth;
+        const frustumXMin = -frustumWidth / 2;
+        const frustumYMin = -frustumHeight / 2;
+        const gridLenX = frustumWidth / this._xSlices;
+        const gridLenY = frustumHeight / this._ySlices;
 
-      let xBegin = Math.floor((lightCameraSpacePos[0] - light.radius - frustumXMin) / gridLenX);
-      let xEnd = Math.floor((lightCameraSpacePos[0] + light.radius - frustumXMin) / gridLenX);
-      let yBegin = Math.floor((lightCameraSpacePos[1] - light.radius - frustumYMin) / gridLenY);
-      let yEnd = Math.floor((lightCameraSpacePos[1] + light.radius - frustumYMin) / gridLenY);
-      let zBegin = Math.floor((lightCameraSpacePos[2] - light.radius - camera.near) / gridLenZ);
-      let zEnd = Math.floor((lightCameraSpacePos[2] + light.radius - camera.near) / gridLenZ);
+        const range = new Object();
+        range.xmin = Math.floor((lightCameraSpacePos[0] - light.radius - frustumXMin) / gridLenX);
+        range.xmax = Math.floor((lightCameraSpacePos[0] + light.radius - frustumXMin) / gridLenX);
+        range.ymin = Math.floor((lightCameraSpacePos[1] - light.radius - frustumYMin) / gridLenY);
+        range.ymax = Math.floor((lightCameraSpacePos[1] + light.radius - frustumYMin) / gridLenY);
+        return range;
+      };
 
-      xBegin = Math.max(xBegin, 0);
-      xEnd = Math.min(xEnd, this._xSlices - 1);
-      yBegin = Math.max(yBegin, 0);
-      yEnd = Math.min(yEnd, this._ySlices - 1);
-      zBegin = Math.max(zBegin, 0);
-      zEnd = Math.min(zEnd, this._zSlices - 1);
+      const range0 = idxRangeForXY(Math.max(lightCameraSpacePos[2] - light.radius, camera.near));
+      const range1 = idxRangeForXY(Math.min(lightCameraSpacePos[2] + light.radius, camera.far));
 
-      for (let z = zBegin; z <= zEnd; z += 1) {
-        for (let y = yBegin; y <= yEnd; y += 1) {
-          for (let x = xBegin; x <= zEnd; x += 1) {
+      let xmin = Math.min(range0.xmin, range1.xmin);
+      let xmax = Math.max(range0.xmax, range1.xmax);
+      let ymin = Math.min(range0.ymin, range1.ymin);
+      let ymax = Math.max(range0.ymax, range1.ymax);
+      let zmin = Math.floor((lightCameraSpacePos[2] - light.radius - camera.near) / gridLenZ);
+      let zmax = Math.floor((lightCameraSpacePos[2] + light.radius - camera.near) / gridLenZ);
+
+      xmin = Math.max(xmin, 0);
+      xmax = Math.min(xmax, this._xSlices - 1);
+      ymin = Math.max(ymin, 0);
+      ymax = Math.min(ymax, this._ySlices - 1);
+      zmin = Math.max(zmin, 0);
+      zmax = Math.min(zmax, this._zSlices - 1);
+      if (xmin > xmax || ymin > ymax || zmin > zmax) {
+        continue;
+      }
+      
+      for (let z = zmin; z <= zmax; z += 1) {
+        for (let y = ymin; y <= ymax; y += 1) {
+          for (let x = xmin; x <= xmax; x += 1) {
             const gridIdx = x + y * this._xSlices + z * this._xSlices * this._ySlices;
             let bufferIdx = this._clusterTexture.bufferIndex(gridIdx, 0);
             const numLights = this._clusterTexture.buffer[bufferIdx] += 1;

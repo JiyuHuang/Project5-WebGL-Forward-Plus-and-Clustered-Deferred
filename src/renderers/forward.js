@@ -15,7 +15,7 @@ export default class ForwardRenderer {
     this._shaderProgram = loadShaderProgram(vsSource, fsSource({
       numLights: NUM_LIGHTS,
     }), {
-      uniforms: ['u_viewProjectionMatrix', 'u_colmap', 'u_normap', 'u_lightbuffer'],
+      uniforms: ['u_viewProjectionMatrix', 'u_colmap', 'u_normap', 'u_lightbuffer', 'u_camPos'],
       attribs: ['a_position', 'a_normal', 'a_uv'],
     });
 
@@ -64,6 +64,7 @@ export default class ForwardRenderer {
     gl.activeTexture(gl.TEXTURE2);
     gl.bindTexture(gl.TEXTURE_2D, this._lightTexture.glTexture);
     gl.uniform1i(this._shaderProgram.u_lightbuffer, 2);
+    gl.uniform3f(this._shaderProgram.u_camPos, camera.position.x, camera.position.y, camera.position.z);
 
     // Draw the scene. This function takes the shader program so that the model's textures can be bound to the right inputs
     scene.draw(this._shaderProgram);
