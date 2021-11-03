@@ -103,7 +103,7 @@ export default class ClusteredDeferredRenderer extends BaseRenderer {
     gl.bindTexture(gl.TEXTURE_2D, null);
   }
 
-  render(camera, scene) {
+  render(camera, scene, renderTarget) {
     if (canvas.width != this._width || canvas.height != this._height) {
       this.resize(canvas.width, canvas.height);
     }
@@ -150,7 +150,7 @@ export default class ClusteredDeferredRenderer extends BaseRenderer {
     this.updateClusters(camera, this._viewMatrix, scene);
 
     // Bind the default null framebuffer which is the screen
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, renderTarget);
 
     // Clear the frame
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
