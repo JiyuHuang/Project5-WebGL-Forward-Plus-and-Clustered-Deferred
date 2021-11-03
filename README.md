@@ -15,6 +15,14 @@ http://JiyuHuang.github.io/Project5-WebGL-Forward-Plus-and-Clustered-Deferred
 
 ![](imgs/webgl_clustered_defer.gif)
 
+# Performance Analysis
+
+This section compares the performance of forward+ and clustered deferred rendering with single-pass forward rendering. Ideally, performance would be analyzed using the tick time. However, the tick time for forward rendering isn't recorded properly somehow, so for now I'm resorting to using framerate as a performance metric. The following performance analysis is conducted without throttling CPU.
+
+![](imgs/fps.png)
+
+As seen from the graph, forward+ significantly improves the performance of forward rendering, as the number of light accumulations in the fragment shaders gets reduced from the number of lights in the scene to the number of lights in the cluster. Clustered deferred rendering's performance is even significantly better than forward+'s, since it decouples the lighting stage from the objects.
+
 # Implementation Details
 
 ## Updating Light Clusters
@@ -39,13 +47,9 @@ The Blinn Phong reflection model is implemented in addition to the standard Lamb
 
 ![](imgs/specular.png)
 
-# Performance Analysis
+## Post-Processing Bloom
 
-This section compares the performance of forward+ and clustered deferred rendering with single-pass forward rendering. Ideally, performance would be analyzed using the tick time. However, the tick time for forward rendering isn't recorded properly somehow, so for now I'm resorting to using framerate as a performance metric. The following performance analysis is conducted without throttling CPU.
-
-![](imgs/fps.png)
-
-As seen from the graph, forward+ significantly improves the performance of forward rendering, as the number of light accumulations in the fragment shaders gets reduced from the number of lights in the scene to the number of lights in the cluster. Clustered deferred rendering's performance is even significantly better than forward+'s, since it decouples the lighting stage from the objects.
+A "bloom" post processing shader is implemented (for clustered deferred rendering only). To achieve true bloom effect, HDR color values are needed. The current version only supports LDR, so the bloom effect won't look ideal. Therefore, by default bloom is turned off. To turn it on, in src/main.js, comment out line 19 and uncomment line 20. At 800 lights with no CPU throttling, this increases tick time from 8ms to 9ms (reduces fps from 120 to 110). Since bloom requires a separate render pass and samples the color of near by pixels, it makes sense that it is more performance demanding.
 
 ### Credits
 

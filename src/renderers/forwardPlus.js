@@ -31,7 +31,7 @@ export default class ForwardPlusRenderer extends BaseRenderer {
     this._viewProjectionMatrix = mat4.create();
   }
 
-  render(camera, scene) {
+  render(camera, scene, renderTarget) {
     // Update the camera matrices
     camera.updateMatrixWorld();
     mat4.invert(this._viewMatrix, camera.matrixWorld.elements);
@@ -56,7 +56,7 @@ export default class ForwardPlusRenderer extends BaseRenderer {
     this._lightTexture.update();
 
     // Bind the default null framebuffer which is the screen
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, renderTarget);
 
     // Render to the whole screen
     gl.viewport(0, 0, canvas.width, canvas.height);
